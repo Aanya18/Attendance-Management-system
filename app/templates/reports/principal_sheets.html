@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}View Attendance Sheets - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <h4 class="mb-0 fw-bold">Attendance Sheets</h4>
+        <form method="post" action="{{ url_for('reports.sync_sheets') }}" class="d-inline">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-sync-alt me-1"></i> Refresh All Sheets
+            </button>
+        </form>
+    </div>
+    <div class="card-body p-4">
+        <h5 class="mb-3">Teacher Attendance Sheets</h5>
+        {% if teacher_sheets %}
+            <div class="list-group mb-4">
+                {% for teacher_data in teacher_sheets %}
+                    <a href="{{ teacher_data.sheet_url }}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-user-tie text-primary me-2"></i>
+                            {{ teacher_data.teacher.display_name }}
+                        </span>
+                        <span class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            Open Sheet
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No teacher sheets found.
+            </div>
+        {% endif %}
+
+        {% if main_sheet_url %}
+            <hr class="my-4">
+            <h5 class="mb-3">Main Attendance Sheet <small class="text-muted">(Deprecated)</small></h5>
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                The main attendance sheet is no longer updated. Please use the individual teacher sheets instead.
+            </div>
+            <a href="{{ main_sheet_url }}" target="_blank" class="btn btn-outline-secondary">
+                <i class="fas fa-external-link-alt me-1"></i>
+                View Main Sheet
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

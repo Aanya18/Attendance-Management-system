@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Attendance System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            padding-left: 250px;
+        }
+        
+        #sidebar {
+            min-width: 250px;
+            max-width: 250px;
+            background: #1266f1;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 999;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #sidebar .sidebar-header {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #sidebar .user-profile {
+            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+        }
+
+        #sidebar .user-profile .user-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 10px 0 5px;
+        }
+
+        #sidebar .user-profile .user-role {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.2);
+            margin-bottom: 10px;
+        }
+
+        #sidebar .user-profile .logout-btn {
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        #sidebar .user-profile .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        #sidebar ul.components {
+            padding: 20px 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        #sidebar ul li a {
+            padding: 12px 20px;
+            display: block;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+            font-weight: 500;
+        }
+        
+        #sidebar ul li a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        #sidebar ul li a.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid white;
+        }
+        
+        #sidebar ul li a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        #content {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding-left: 0;
+            }
+            
+            #sidebar {
+                margin-left: -250px;
+            }
+            
+            body.mobile-nav-active {
+                padding-left: 250px;
+            }
+            
+            body.mobile-nav-active #sidebar {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h5 class="mb-0 fw-bold">
+                <i class="fas fa-graduation-cap me-2"></i>Attendance System
+            </h5>
+        </div>
+
+        <ul class="list-unstyled components">
+            {% if current_user.is_authenticated %}
+                {% if current_user.is_principal() %}
+                <li>
+                    <a href="{{ url_for('auth.user_list') }}" class="{{ 'active' if request.endpoint == 'auth.user_list' }}">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('students.list') }}" class="{{ 'active' if request.endpoint == 'students.list' }}">
+                        <i class="fas fa-user-graduate"></i> All Students
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('attendance.view') }}" class="{{ 'active' if request.endpoint == 'attendance.view' }}">
+                        <i class="fas fa-calendar-check"></i> View Attendance
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('reports.monthly') }}" class="{{ 'active' if request.endpoint == 'reports.monthly' }}">
+                        <i class="fas fa-chart-line"></i> Monthly Report
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('images.list') }}" class="{{ 'active' if request.endpoint == 'images.list' }}">
+                        <i class="fas fa-images"></i> Images
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('reports.flush_options') }}" class="{{ 'active' if request.endpoint == 'reports.flush_options' }}">
+                        <i class="fas fa-trash"></i> Reset Data
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if current_user.is_teacher() %}
+                <li>
+                    <a href="{{ url_for('students.list') }}" class="{{ 'active' if request.endpoint == 'students.list' }}">
+                        <i class="fas fa-user-graduate"></i> My Students
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('students.add') }}" class="{{ 'active' if request.endpoint == 'students.add' }}">
+                        <i class="fas fa-user-plus"></i> Add Student
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('attendance.mark') }}" class="{{ 'active' if request.endpoint == 'attendance.mark' }}">
+                        <i class="fas fa-clipboard-check"></i> Mark Attendance
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('attendance.view') }}" class="{{ 'active' if request.endpoint == 'attendance.view' }}">
+                        <i class="fas fa-calendar-check"></i> View Attendance
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('images.list') }}" class="{{ 'active' if request.endpoint == 'images.list' }}">
+                        <i class="fas fa-images"></i> Images
+                    </a>
+                </li>
+                {% endif %}
+            {% else %}
+                <li>
+                    <a href="{{ url_for('auth.login') }}" class="{{ 'active' if request.endpoint == 'auth.login' }}">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+
+        <!-- User Profile -->
+        {% if current_user.is_authenticated %}
+        <div class="user-profile">
+            <div class="user-name">{{ current_user.username }}</div>
+            <div class="user-role">{{ current_user.role|replace('_', ' ')|title }}</div>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fas fa-sign-out-alt me-1"></i> Logout
+            </a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Page Content -->
+    <div id="content" class="container-fluid">
+        <div class="container-fluid px-4">
+            <!-- Messages/Alerts -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            
+            <!-- Main Content -->
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile nav toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarCollapse = document.createElement('button');
+            sidebarCollapse.classList.add('btn', 'btn-primary', 'd-md-none');
+            sidebarCollapse.style.position = 'fixed';
+            sidebarCollapse.style.top = '10px';
+            sidebarCollapse.style.left = '10px';
+            sidebarCollapse.style.zIndex = '1000';
+            sidebarCollapse.innerHTML = '<i class="fas fa-bars"></i>';
+            document.body.appendChild(sidebarCollapse);
+            
+            sidebarCollapse.addEventListener('click', function() {
+                document.body.classList.toggle('mobile-nav-active');
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

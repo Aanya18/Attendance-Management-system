@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Student Report - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Student Attendance Report</h4>
+        <a href="{{ url_for('students.list') }}" class="btn btn-secondary">Back to Students</a>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5>{{ student.name }}</h5>
+                <p><strong>Roll Number:</strong> {{ student.roll_number }}</p>
+                <p><strong>Grade:</strong> {{ student.grade }}</p>
+                <p><strong>Teacher:</strong> {{ student.teacher.display_name }}</p>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Attendance Summary</h5>
+                        <p><strong>Total Days:</strong> {{ total_days }}</p>
+                        <p><strong>Present Days:</strong> {{ present_days }}</p>
+                        <p><strong>Absent Days:</strong> {{ absent_days }}</p>
+                        <p><strong>Attendance Percentage:</strong> {{ attendance_percentage }}%</p>
+                        <div class="progress">
+                            <div class="progress-bar {% if attendance_percentage < 75 %}bg-danger{% elif attendance_percentage < 90 %}bg-warning{% else %}bg-success{% endif %}"
+                                 role="progressbar"
+                                 style="width: {{ attendance_percentage }}%;"
+                                 aria-valuenow="{{ attendance_percentage }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                {{ attendance_percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if not is_teacher %}
+        <form method="get" action="{{ url_for('reports.student', id=student.id) }}" class="mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="month" class="form-label">Month</label>
+                    <select class="form-select" id="month" name="month">
+                        {% for i in range(1, 13) %}
+                        <option value="{{ i }}" {% if i == selected_month %}selected{% endif %}>
+                            {{ '{:02d}'.format(i) }} - {{ ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][i-1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="year" class="form-label">Year</label>
+                    <select class="form-select" id="year" name="year">
+                        {% for i in range(selected_year - 5, selected_year + 1) %}
+                        <option value="{{ i }}" {% if i == selected_year %}selected{% endif %}>{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">View</button>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ url_for('reports.student', id=student.id, year=selected_year, month=selected_month, download=1) }}" class="btn btn-success w-100">Download Report</a>
+                </div>
+            </div>
+        </form>
+        {% else %}
+        <div class="alert alert-info mb-4">
+            <p class="mb-0">You are viewing the attendance report for the current month ({{ month_name }} {{ selected_year }}). Teachers can only view current month data.</p>
+        </div>
+        {% endif %}
+
+        <h5 class="mb-3">Attendance for {{ month_name }} {{ selected_year }}</h5>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Marked By</th>
+                        <th>Last Modified</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in attendance_data %}
+                    <tr>
+                        <td>{{ item.date.strftime('%a, %b %d') }}</td>
+                        <td>
+                            {% if item.status == 'Present' %}
+                                <span class="badge bg-success">Present</span>
+                            {% elif item.status == 'Absent' %}
+                                <span class="badge bg-danger">Absent</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Not Marked</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.marked_by if item.marked_by else '-' }}</td>
+                        <td>{{ item.last_modified.strftime('%Y-%m-%d %H:%M:%S') if item.last_modified else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

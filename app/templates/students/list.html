@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Students - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden animate-fade-in-up">
+    <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
+        <h4 class="mb-0 fw-bold">Students</h4>
+        {% if current_user.is_teacher() %}
+        <a href="{{ url_for('students.add') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add Student
+        </a>
+        {% endif %}
+    </div>
+    
+    {% if is_principal %}
+        {% if teachers_with_students %}
+            {% for teacher_data in teachers_with_students %}
+            <div class="mb-4">
+                <div class="bg-light p-3 border-top border-bottom">
+                    <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i>{{ teacher_data.teacher.display_name }}'s Students</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3 px-4 fw-bold">Name</th>
+                                <th class="py-3 px-4 fw-bold">Roll Number</th>
+                                <th class="py-3 px-4 fw-bold">Grade</th>
+                                <th class="py-3 px-4 fw-bold text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in teacher_data.students %}
+                            <tr>
+                                <td class="py-3 px-4">{{ student.name }}</td>
+                                <td class="py-3 px-4">{{ student.roll_number }}</td>
+                                <td class="py-3 px-4">{{ student.grade }}</td>
+                                <td class="py-3 px-4 text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('reports.student', id=student.id) }}" class="btn btn-info btn-sm rounded-pill px-3">
+                                            <i class="fas fa-chart-bar me-1"></i> Report
+                                        </a>
+                                        {% if current_user.is_principal() %}
+                                        <a href="{{ url_for('students.edit', id=student.id) }}" class="btn btn-warning btn-sm rounded-pill px-3 mx-1">
+                                            <i class="fas fa-edit me-1"></i> Edit
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info m-4 d-flex align-items-center">
+                <i class="fas fa-info-circle me-3 fa-lg"></i>
+                <div>No students found in any class.</div>
+            </div>
+        {% endif %}
+    {% else %}
+        {% if students %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="py-3 px-4 fw-bold">Name</th>
+                        <th class="py-3 px-4 fw-bold">Roll Number</th>
+                        <th class="py-3 px-4 fw-bold">Grade</th>
+                        <th class="py-3 px-4 fw-bold text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td class="py-3 px-4">{{ student.name }}</td>
+                        <td class="py-3 px-4">{{ student.roll_number }}</td>
+                        <td class="py-3 px-4">{{ student.grade }}</td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('reports.student', id=student.id) }}" class="btn btn-info btn-sm rounded-pill px-3">
+                                    <i class="fas fa-chart-bar me-1"></i> Report
+                                </a>
+                                {% if current_user.id == student.teacher_id %}
+                                <a href="{{ url_for('students.edit', id=student.id) }}" class="btn btn-warning btn-sm rounded-pill px-3 mx-1">
+                                    <i class="fas fa-edit me-1"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-danger btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#deleteModal{{ student.id }}">
+                                    <i class="fas fa-trash-alt me-1"></i> Delete
+                                </button>
+                                {% endif %}
+                            </div>
+
+                            <!-- Delete Modal -->
+                            <div class="modal fade" id="deleteModal{{ student.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title fw-bold">Confirm Delete</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4">
+                                            <p class="mb-0">Are you sure you want to delete <strong>{{ student.name }}</strong>? This action cannot be undone.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <form action="{{ url_for('students.delete', id=student.id) }}" method="post">
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="fas fa-trash-alt me-1"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info m-4 d-flex align-items-center">
+            <i class="fas fa-info-circle me-3 fa-lg"></i>
+            <div>
+                No students found. {% if current_user.is_teacher() %}<a href="{{ url_for('students.add') }}" class="alert-link">Add a student</a>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rounded-4 {
+        border-radius: 0.75rem !important;
+    }
+    
+    .btn-group .btn {
+        transition: all 0.3s;
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s;
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(75, 108, 183, 0.05);
+    }
+    
+    .alert {
+        border-radius: 0.75rem;
+    }
+</style>
+{% endblock %}

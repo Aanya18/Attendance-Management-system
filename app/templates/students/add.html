@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Add Student - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden animate-fade-in-up">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0 fw-bold">Add New Student</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" action="{{ url_for('students.add') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            {{ form.name.label(class="form-label fw-bold") }}
+                            {{ form.name(class="form-control form-control-lg", placeholder="Enter student name") }}
+                            {% for error in form.name.errors %}
+                            <div class="text-danger mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            {{ form.roll_number.label(class="form-label fw-bold") }}
+                            {{ form.roll_number(class="form-control form-control-lg", placeholder="Enter roll number") }}
+                            {% for error in form.roll_number.errors %}
+                            <div class="text-danger mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.grade.label(class="form-label fw-bold") }}
+                        {{ form.grade(class="form-select form-select-lg") }}
+                        {% for error in form.grade.errors %}
+                        <div class="text-danger mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg fw-bold") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('students.list') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Students
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rounded-4 {
+        border-radius: 0.75rem !important;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #4b6cb7;
+        box-shadow: 0 0 0 0.25rem rgba(75, 108, 183, 0.25);
+    }
+    
+    .btn-primary {
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}

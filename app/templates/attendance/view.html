@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}View Attendance - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
+        <h4 class="mb-0 fw-bold">View Attendance</h4>
+        {% if is_principal %}
+        <form class="d-flex align-items-center" method="get" action="{{ url_for('attendance.view') }}">
+            <div class="me-2">
+                <input type="date" class="form-control" name="date" id="date" value="{{ selected_date.strftime('%Y-%m-%d') }}">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-1"></i> View
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    <div class="card-body p-4">
+        <h5 class="mb-4 d-flex align-items-center">
+            <i class="fas fa-calendar-day me-2 text-primary"></i>
+            <span>{{ selected_date.strftime('%A, %B %d, %Y') }}</span>
+        </h5>
+
+        {% if is_principal %}
+            {% if teachers_with_attendance %}
+                {% for teacher_data in teachers_with_attendance %}
+                <div class="mb-5">
+                    <div class="bg-light p-3 border-top border-bottom mb-3">
+                        <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i>{{ teacher_data.teacher.display_name }}'s Students</h5>
+                    </div>
+                    
+                    {% if teacher_data.attendance_data %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="py-3 px-4 fw-bold">Name</th>
+                                    <th class="py-3 px-4 fw-bold">Roll Number</th>
+                                    <th class="py-3 px-4 fw-bold">Grade</th>
+                                    <th class="py-3 px-4 fw-bold">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in teacher_data.attendance_data %}
+                                <tr>
+                                    <td class="py-3 px-4">{{ item.student.name }}</td>
+                                    <td class="py-3 px-4">{{ item.student.roll_number }}</td>
+                                    <td class="py-3 px-4">{{ item.student.grade }}</td>
+                                    <td class="py-3 px-4">
+                                        {% if item.attendance %}
+                                            <span class="badge rounded-pill px-3 py-2 {% if item.attendance.status %}bg-success{% else %}bg-danger{% endif %}">
+                                                {% if item.attendance.status %}
+                                                    <i class="fas fa-check-circle me-1"></i> Present
+                                                {% else %}
+                                                    <i class="fas fa-times-circle me-1"></i> Absent
+                                                {% endif %}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                                <i class="fas fa-question-circle me-1"></i> Not Marked
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No attendance data found for this teacher's students on this date.
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="alert alert-info d-flex align-items-center p-4 rounded-4">
+                <i class="fas fa-info-circle me-3 fa-lg"></i>
+                <div>
+                    No teachers with students found in the system.
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            {% if attendance_data %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="py-3 px-4 fw-bold">Name</th>
+                            <th class="py-3 px-4 fw-bold">Roll Number</th>
+                            <th class="py-3 px-4 fw-bold">Grade</th>
+                            <th class="py-3 px-4 fw-bold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in attendance_data %}
+                        <tr>
+                            <td class="py-3 px-4">{{ item.student.name }}</td>
+                            <td class="py-3 px-4">{{ item.student.roll_number }}</td>
+                            <td class="py-3 px-4">{{ item.student.grade }}</td>
+                            <td class="py-3 px-4">
+                                {% if item.attendance %}
+                                    <span class="badge rounded-pill px-3 py-2 {% if item.attendance.status %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if item.attendance.status %}
+                                            <i class="fas fa-check-circle me-1"></i> Present
+                                        {% else %}
+                                            <i class="fas fa-times-circle me-1"></i> Absent
+                                        {% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                        <i class="fas fa-question-circle me-1"></i> Not Marked
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info d-flex align-items-center p-4 rounded-4">
+                <i class="fas fa-info-circle me-3 fa-lg"></i>
+                <div>
+                No attendance data found for this date.
+                    {% if not is_principal and selected_date == today %}
+                    <a href="{{ url_for('attendance.mark') }}" class="alert-link">Mark attendance now</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rounded-4 {
+        border-radius: 0.75rem !important;
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s;
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(75, 108, 183, 0.05);
+    }
+</style>
+{% endblock %}

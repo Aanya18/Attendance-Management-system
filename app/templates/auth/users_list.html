@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Users - {{ super() }}{% endblock %}
+
+{% block content %}
+<!-- Principals Section
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Principals</h4>
+        <a href="{{ url_for('auth.register_principal') }}" class="btn btn-primary">Add Principal</a>
+    </div>
+    <div class="card-body">
+        {% if principals %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for principal in principals %}
+                    <tr>
+                        <td>{{ principal.username }}</td>
+                        <td>{{ principal.email }}</td>
+                        <td>
+                            {% if principal.id != current_user.id %}
+                            <a href="{{ url_for('auth.edit_user', id=principal.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{{ url_for('auth.delete_user', id=principal.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this principal?')">Delete</a>
+                            {% else %}
+                            <span class="badge bg-info">Current User</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No principals found.
+        </div>
+        {% endif %}
+    </div>
+</div> -->
+
+<!-- Teachers Section -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Teachers</h4>
+        <a href="{{ url_for('auth.register_teacher') }}" class="btn btn-primary">Add Teacher</a>
+    </div>
+    <div class="card-body">
+        {% if teachers %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Students</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for teacher in teachers %}
+                    <tr>
+                        <td>{{ teacher.username }}</td>
+                        <td>{{ teacher.email }}</td>
+                        <td>{{ teacher.students|length }}</td>
+                        <td>
+                            <a href="{{ url_for('auth.edit_user', id=teacher.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{{ url_for('auth.delete_user', id=teacher.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this teacher?')">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No teachers found. <a href="{{ url_for('auth.register_teacher') }}">Add a teacher</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "auth_base.html" %}
+
+{% block title %}Register Teacher - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="card-header">
+        <h4 class="mb-0 fw-bold">Register New Teacher</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{{ url_for('auth.register_teacher') }}" class="auth-form">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control", placeholder="Enter teacher's username") }}
+                {% for error in form.username.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", placeholder="Enter teacher's email") }}
+                {% for error in form.email.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", placeholder="Create a password") }}
+                {% for error in form.password.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-4">
+                {{ form.password2.label(class="form-label") }}
+                {{ form.password2(class="form-control", placeholder="Confirm password") }}
+                {% for error in form.password2.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('auth.user_list') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Back
+                </a>
+                <button type="submit" class="auth-btn" style="width: auto; padding: 0.6rem 2rem;">
+                    <i class="fas fa-user-plus me-2"></i> Register Teacher
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

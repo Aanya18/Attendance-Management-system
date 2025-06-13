@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="landing-page">
+    <!-- Animated Shapes -->
+    <div class="animated-shape shape-1"></div>
+    <div class="animated-shape shape-2"></div>
+    <div class="animated-shape shape-3"></div>
+    <div class="animated-shape shape-4"></div>
+    
+    <!-- Hero Section -->
+    <section class="landing-hero">
+        <div class="container text-center">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <h1 class="animate-fade-in-up">Student Attendance Management System</h1>
+                    <p class="animate-fade-in-up delay-1">A comprehensive solution for managing student attendance and records with powerful reporting and analytics</p>
+                    <div class="mt-5 animate-fade-in-up delay-2">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg me-3 shadow-sm">
+                            <i class="fas fa-sign-in-alt me-2"></i> Login
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-user-plus me-2"></i> Register
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="fw-bold mb-3 section-title">Key Features</h2>
+                    <p class="text-muted">Our system provides a user-friendly interface for teachers to mark attendance and for principals to monitor attendance patterns across classes.</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4 animate-on-scroll">
+                    <div class="landing-feature-card card">
+                        <div class="card-body text-center p-4">
+                            <div class="landing-feature-icon">
+                                <i class="fas fa-user-check fa-2x"></i>
+                            </div>
+                            <h3 class="h4 mb-3">Attendance Tracking</h3>
+                            <p class="text-muted mb-0">Mark and track student attendance with ease. View historical attendance data and identify patterns.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 animate-on-scroll" data-delay="0.2s">
+                    <div class="landing-feature-card card">
+                        <div class="card-body text-center p-4">
+                            <div class="landing-feature-icon">
+                                <i class="fas fa-chart-bar fa-2x"></i>
+                            </div>
+                            <h3 class="h4 mb-3">Reports & Analytics</h3>
+                            <p class="text-muted mb-0">Generate comprehensive reports on attendance patterns. Export data to Excel for further analysis.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 animate-on-scroll" data-delay="0.4s">
+                    <div class="landing-feature-card card">
+                        <div class="card-body text-center p-4">
+                            <div class="landing-feature-icon">
+                                <i class="fas fa-images fa-2x"></i>
+                            </div>
+                            <h3 class="h4 mb-3">Image-based Verification</h3>
+                            <p class="text-muted mb-0">Upload attendance record images for quick verification. Our system processes these images to confirm attendance marks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-5 landing-process">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="fw-bold mb-3 section-title">How Our System Works</h2>
+                    <p class="text-muted">A simple and efficient process to manage attendance.</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4 process-step animate-on-scroll">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="process-icon mb-3">
+                                <i class="fas fa-user-plus fa-2x"></i>
+                            </div>
+                            <h3 class="h5 mb-2">1. Register & Setup</h3>
+                            <p class="text-muted small">Principals register the school. Teachers and students are added to the system.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 process-step animate-on-scroll" data-delay="0.2s">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="process-icon mb-3">
+                                <i class="fas fa-clipboard-check fa-2x"></i>
+                            </div>
+                            <h3 class="h5 mb-2">2. Mark Attendance</h3>
+                            <p class="text-muted small">Teachers easily mark daily attendance for their classes through an intuitive interface.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 process-step animate-on-scroll" data-delay="0.4s">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="process-icon mb-3">
+                                <i class="fas fa-chart-pie fa-2x"></i>
+                            </div>
+                            <h3 class="h5 mb-2">3. View Reports</h3>
+                            <p class="text-muted small">Principals and teachers can view detailed attendance reports and analytics.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Roles Section -->
+    <section class="py-5 bg-light user-roles-section">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="fw-bold mb-3 section-title">User Roles</h2>
+                    <p class="text-muted">Our system supports different roles with specific permissions</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-4 animate-on-scroll">
+                    <div class="card border-0 shadow h-100">
+                        <div class="card-header bg-primary text-white py-3">
+                            <h3 class="h4 mb-0">Teacher</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item border-0"><i class="fas fa-check text-primary me-2"></i> Add and manage students</li>
+                                <li class="list-group-item border-0"><i class="fas fa-check text-primary me-2"></i> Mark daily attendance</li>
+                                <li class="list-group-item border-0"><i class="fas fa-check text-primary me-2"></i> View attendance records for their students</li>
+                                <li class="list-group-item border-0"><i class="fas fa-check text-primary me-2"></i> Upload attendance record images</li>
+                                <li class="list-group-item border-0"><i class="fas fa-check text-primary me-2"></i> Generate student-specific reports</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4 animate-on-scroll" data-delay="0.2s">
+                    <div class="card border-0 shadow h-100">
+                        <div class="card-header bg-success text-white py-3">
+                            <h3 class="h4 mb-0">Principal</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item border-0"><i class="fas fa-check text-success me-2"></i> Manage teachers and other principals</li>
+                                <li class="list-group-item border-0"><i class="fas fa-check text-success me-2"></i> View all students and attendance records</li>
+                                <li class="list-group-item border-0"><i class="fas fa-check text-success me-2"></i> Access historical attendance data</li>
+                                <li class="list-group-item border-0"><i class="fas fa-check text-success me-2"></i> Verify attendance through uploaded images</li>
+                                <li class="list-group-item border-0"><i class="fas fa-check text-success me-2"></i> Generate and export comprehensive reports</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="landing-cta">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="landing-cta-card text-center animate-on-scroll">
+                        <h2 class="fw-bold mb-4">Ready to Get Started?</h2>
+                        <p class="text-muted mb-4">Join our student attendance management system today and streamline your attendance tracking process.</p>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg shadow-sm">
+                            <span>Login Now</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 bg-dark text-white">
+        <div class="container text-center">
+            <p class="mb-0">Student Attendance Management System &copy; 2024</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Scroll animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const animateElements = document.querySelectorAll('.animate-on-scroll');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const delay = entry.target.getAttribute('data-delay') || 0;
+                        setTimeout(() => {
+                            entry.target.classList.add('animate-element-visible');
+                        }, delay * 1000);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+            
+            animateElements.forEach(element => {
+                observer.observe(element);
+            });
+            
+            // Add title animation
+            const sectionTitles = document.querySelectorAll('.section-title');
+            sectionTitles.forEach(title => {
+                observer.observe(title);
+                title.classList.add('section-title-animation');
+            });
+        });
+    </script>
+</body>
+</html> 

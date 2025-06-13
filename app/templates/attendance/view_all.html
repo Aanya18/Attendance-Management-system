@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}View Attendance - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Attendance for {{ selected_date.strftime('%A, %B %d, %Y') }}</h4>
+        <div>
+            <form class="row g-3 align-items-center" method="GET" action="{{ url_for('attendance.view') }}">
+                <div class="col-auto">
+                    <input type="date" class="form-control" id="date" name="date" value="{{ selected_date.strftime('%Y-%m-%d') }}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">View Date</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Roll Number</th>
+                        <th>Grade</th>
+                        <th>Teacher</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in attendance_data %}
+                    <tr>
+                        <td>{{ record.student.name }}</td>
+                        <td>{{ record.student.roll_number }}</td>
+                        <td>{{ record.student.grade }}</td>
+                        <td>{{ record.teacher.username }}</td>
+                        <td>
+                            {% if record.attendance %}
+                                {% if record.attendance.status %}
+                                <span class="badge bg-success">Present</span>
+                                {% else %}
+                                <span class="badge bg-danger">Absent</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-warning">Not Marked</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if record.attendance %}
+                            <a href="{{ url_for('attendance.edit', id=record.attendance.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

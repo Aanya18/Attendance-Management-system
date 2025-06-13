@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Database & Sheet Management - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Database & Google Sheet Management</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Warning</h5>
+                    <p>The actions on this page are <strong>irreversible</strong>. Please be careful!</p>
+                </div>
+
+                <div class="row">
+                    <!-- Database Management -->
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0">Database Management</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Flush the database to remove all data except principal accounts.</p>
+                                <form method="POST">
+                                    <input type="hidden" name="action" value="flush-db">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('WARNING: This will delete ALL data from the database (teachers, students, attendance records). Only principal accounts will be preserved. This action CANNOT be undone. Are you sure?')">
+                                        <i class="fas fa-trash-alt"></i> Flush Database
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Sheets Management -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">Google Sheets Management</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Reset all Google Sheets or a specific teacher's sheet:</p>
+                                
+                                <!-- Reset All Sheets -->
+                                <form method="POST" class="mb-3">
+                                    <input type="hidden" name="action" value="reset-all-sheets">
+                                    <button type="submit" class="btn btn-warning" onclick="return confirm('WARNING: This will clear ALL Google Sheets (main and teacher sheets). This action CANNOT be undone. Are you sure?')">
+                                        <i class="fas fa-file-excel"></i> Reset All Sheets
+                                    </button>
+                                </form>
+                                
+                                <!-- Reset Specific Teacher Sheet -->
+                                <form method="POST">
+                                    <input type="hidden" name="action" value="reset-teacher-sheet">
+                                    <div class="input-group">
+                                        <select name="teacher_id" class="form-select" required>
+                                            <option value="">Select Teacher</option>
+                                            {% for teacher in teachers %}
+                                            <option value="{{ teacher.id }}">{{ teacher.username }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-warning" onclick="return confirm('WARNING: This will clear the selected teacher\'s Google Sheet. This action CANNOT be undone. Are you sure?')">
+                                            <i class="fas fa-file-excel"></i> Reset Sheet
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('reports.monthly') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Reports
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

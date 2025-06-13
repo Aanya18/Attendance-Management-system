@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">{{ image.file_name }}</h4>
+            <a href="{{ url_for('images.list') }}" class="btn btn-secondary">Back to Images</a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Original Image</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <img src="{{ url_for('static', filename='uploads/' + image.file_name) }}" class="img-fluid" alt="{{ image.file_name }}">
+                            {% if image.drive_view_link %}
+                            <a href="{{ image.drive_view_link }}" target="_blank" class="btn btn-success btn-sm mt-2">View in Drive</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">YOLO Analysis</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if image.annotated_file_path %}
+                            <img src="{{ url_for('static', filename='uploads/' + image.annotated_file_path.split('/')[-1]) }}" class="img-fluid" alt="YOLO Analysis">
+                            {% if image.annotated_drive_view_link %}
+                            <a href="{{ image.annotated_drive_view_link }}" target="_blank" class="btn btn-success btn-sm mt-2">View Analysis in Drive</a>
+                            {% endif %}
+                            {% else %}
+                            <div class="alert alert-info">
+                                No YOLO analysis available
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Image Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Upload Date:</th>
+                                    <td>{{ image.date.strftime('%d-%m-%Y') }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Upload Time:</th>
+                                    <td>{{ image.uploaded_at.strftime('%H:%M:%S') }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Uploaded By:</th>
+                                    <td>{{ image.uploader.username }}</td>
+                                </tr>
+                                {% if image.description %}
+                                <tr>
+                                    <th>Description:</th>
+                                    <td>{{ image.description }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Attendance Analysis</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Students Detected:</th>
+                                    <td>{{ image.yolo_count }}</td>
+                                </tr>
+                                {% if image.yolo_confidence %}
+                                <tr>
+                                    <th>Detection Confidence:</th>
+                                    <td>{{ "%.2f"|format(image.yolo_confidence * 100) }}%</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+
+                            {% if image.has_discrepancy %}
+                            <div class="alert alert-warning mt-3">
+                                <h6 class="alert-heading">Discrepancy Detected</h6>
+                                {{ image.discrepancy_message }}
+                            </div>
+                            {% else %}
+                            <div class="alert alert-success mt-3">
+                                <h6 class="alert-heading">Attendance Match</h6>
+                                YOLO detection count matches the attendance records.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if current_user.is_principal() %}
+            <div class="mt-4">
+                <form action="{{ url_for('images.delete', id=image.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this image?')">Delete Image</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

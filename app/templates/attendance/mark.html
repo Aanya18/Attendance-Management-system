@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden animate-fade-in-up">
+    <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white py-3">
+        <h4 class="mb-0 fw-bold">Mark Attendance</h4>
+        <div class="badge bg-light text-primary rounded-pill px-3 py-2">{{ today.strftime('%B %d, %Y') }}</div>
+    </div>
+    <div class="card-body p-4">
+        {% if students %}
+        <form method="post" action="{{ url_for('attendance.mark') }}">
+            <div class="mb-4">
+                <label for="date" class="form-label fw-bold">Date (Today)</label>
+                <input type="date" class="form-control form-control-lg" id="date" name="date" value="{{ today.strftime('%Y-%m-%d') }}" readonly required>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="py-3 px-4 fw-bold">Name</th>
+                            <th class="py-3 px-4 fw-bold">Roll Number</th>
+                            <th class="py-3 px-4 fw-bold">Grade</th>
+                            <th class="py-3 px-4 fw-bold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td class="py-3 px-4">{{ student.name }}</td>
+                            <td class="py-3 px-4">{{ student.roll_number }}</td>
+                            <td class="py-3 px-4">{{ student.grade }}</td>
+                            <td class="py-3 px-4">
+                                <div class="d-flex gap-4">
+                                    <div class="form-check status-check">
+                                        <input class="form-check-input" type="radio" name="status_{{ student.id }}" id="present_{{ student.id }}" value="present" checked>
+                                        <label class="form-check-label status-label present-label" for="present_{{ student.id }}">
+                                            <i class="fas fa-check-circle text-success me-2"></i> Present
+                                        </label>
+                                    </div>
+                                    <div class="form-check status-check">
+                                        <input class="form-check-input" type="radio" name="status_{{ student.id }}" id="absent_{{ student.id }}" value="absent">
+                                        <label class="form-check-label status-label absent-label" for="absent_{{ student.id }}">
+                                            <i class="fas fa-times-circle text-danger me-2"></i> Absent
+                                        </label>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                    <i class="fas fa-save me-2"></i> Submit Attendance
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="alert alert-info d-flex align-items-center p-4 rounded-4">
+            <i class="fas fa-info-circle me-3 fa-lg"></i>
+            <div>
+                No students found. {% if current_user.is_teacher() %}<a href="{{ url_for('students.add') }}" class="alert-link">Add a student</a>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rounded-4 {
+        border-radius: 0.75rem !important;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .form-control:focus {
+        border-color: #4b6cb7;
+        box-shadow: 0 0 0 0.25rem rgba(75, 108, 183, 0.25);
+    }
+    
+    .status-check {
+        cursor: pointer;
+        padding: 8px 15px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    
+    .status-check:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .status-label {
+        cursor: pointer;
+        font-weight: 500;
+    }
+    
+    .present-label {
+        color: #198754;
+    }
+    
+    .absent-label {
+        color: #dc3545;
+    }
+    
+    .form-check-input:checked + .present-label {
+        font-weight: 700;
+    }
+    
+    .form-check-input:checked + .absent-label {
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
