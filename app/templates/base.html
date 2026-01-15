@@ -50,6 +50,7 @@
             font-size: 1.1rem;
             font-weight: 600;
             margin: 10px 0 5px;
+            color: white;
         }
 
         #sidebar .user-profile .user-role {
@@ -59,21 +60,30 @@
             font-size: 0.8rem;
             background: rgba(255, 255, 255, 0.2);
             margin-bottom: 10px;
+            color: white;
         }
 
         #sidebar .user-profile .logout-btn {
             color: white;
             text-decoration: none;
             display: inline-block;
-            padding: 5px 15px;
+            padding: 8px 20px;
             border-radius: 5px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             transition: all 0.3s;
             font-size: 0.9rem;
+            width: 100%;
+            margin-top: 10px;
         }
 
         #sidebar .user-profile .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        #sidebar .user-profile .text-white-50 {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-size: 0.85rem;
         }
         
         #sidebar ul.components {
@@ -90,21 +100,34 @@
             transition: all 0.3s;
             position: relative;
             font-weight: 500;
+            border-left: 3px solid transparent;
         }
         
         #sidebar ul li a:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: rgba(255, 255, 255, 0.5);
+            padding-left: 25px;
         }
         
         #sidebar ul li a.active {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
             border-left: 4px solid white;
+            font-weight: 600;
         }
         
         #sidebar ul li a i {
             margin-right: 10px;
             width: 20px;
             text-align: center;
+            font-size: 1rem;
+        }
+        
+        /* Add divider between sections */
+        #sidebar ul li.divider {
+            height: 1px;
+            margin: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            list-style: none;
         }
         
         #content {
@@ -147,6 +170,12 @@
             {% if current_user.is_authenticated %}
                 {% if current_user.is_principal() %}
                 <li>
+                    <a href="{{ url_for('auth.principal_dashboard') }}" class="{{ 'active' if request.endpoint == 'auth.principal_dashboard' }}">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li>
                     <a href="{{ url_for('auth.user_list') }}" class="{{ 'active' if request.endpoint == 'auth.user_list' }}">
                         <i class="fas fa-users"></i> Users
                     </a>
@@ -156,6 +185,7 @@
                         <i class="fas fa-user-graduate"></i> All Students
                     </a>
                 </li>
+                <li class="divider"></li>
                 <li>
                     <a href="{{ url_for('attendance.view') }}" class="{{ 'active' if request.endpoint == 'attendance.view' }}">
                         <i class="fas fa-calendar-check"></i> View Attendance
@@ -166,6 +196,7 @@
                         <i class="fas fa-chart-line"></i> Monthly Report
                     </a>
                 </li>
+                <li class="divider"></li>
                 <li>
                     <a href="{{ url_for('images.list') }}" class="{{ 'active' if request.endpoint == 'images.list' }}">
                         <i class="fas fa-images"></i> Images
@@ -189,6 +220,7 @@
                         <i class="fas fa-user-plus"></i> Add Student
                     </a>
                 </li>
+                <li class="divider"></li>
                 <li>
                     <a href="{{ url_for('attendance.mark') }}" class="{{ 'active' if request.endpoint == 'attendance.mark' }}">
                         <i class="fas fa-clipboard-check"></i> Mark Attendance
@@ -199,9 +231,46 @@
                         <i class="fas fa-calendar-check"></i> View Attendance
                     </a>
                 </li>
+                <li class="divider"></li>
+                <li>
+                    <a href="{{ url_for('images.upload') }}" class="{{ 'active' if request.endpoint == 'images.upload' }}">
+                        <i class="fas fa-upload"></i> Upload Images
+                    </a>
+                </li>
                 <li>
                     <a href="{{ url_for('images.list') }}" class="{{ 'active' if request.endpoint == 'images.list' }}">
-                        <i class="fas fa-images"></i> Images
+                        <i class="fas fa-images"></i> View Images
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                    <a href="{{ url_for('auth.change_password') }}" class="{{ 'active' if request.endpoint == 'auth.change_password' }}">
+                        <i class="fas fa-key"></i> Change Password
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if current_user.is_student() %}
+                <li>
+                    <a href="{{ url_for('student.profile') }}" class="{{ 'active' if request.endpoint == 'student.profile' }}">
+                        <i class="fas fa-user"></i> My Profile
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                    <a href="{{ url_for('student.attendance') }}" class="{{ 'active' if request.endpoint == 'student.attendance' }}">
+                        <i class="fas fa-calendar-check"></i> My Attendance
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('student.report') }}" class="{{ 'active' if request.endpoint == 'student.report' }}">
+                        <i class="fas fa-chart-line"></i> My Report
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                    <a href="{{ url_for('student.change_password') }}" class="{{ 'active' if request.endpoint == 'student.change_password' }}">
+                        <i class="fas fa-key"></i> Change Password
                     </a>
                 </li>
                 {% endif %}
@@ -217,30 +286,74 @@
         <!-- User Profile -->
         {% if current_user.is_authenticated %}
         <div class="user-profile">
-            <div class="user-name">{{ current_user.username }}</div>
-            <div class="user-role">{{ current_user.role|replace('_', ' ')|title }}</div>
-            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+            <div class="user-name">
+                <i class="fas fa-user-circle me-2"></i>{{ current_user.username }}
+            </div>
+            <div class="user-role">
+                {% if current_user.is_student() %}
+                    <i class="fas fa-user-graduate me-1"></i>Student
+                {% elif current_user.is_teacher() %}
+                    <i class="fas fa-chalkboard-teacher me-1"></i>Teacher
+                {% elif current_user.is_principal() %}
+                    <i class="fas fa-user-shield me-1"></i>Principal
+                {% else %}
+                    {{ current_user.role|replace('_', ' ')|title }}
+                {% endif %}
+            </div>
+            {% if current_user.is_student() %}
+            <div class="mt-2">
+                {% set student = current_user.student_account %}
+                {% if student %}
+                <small class="text-white-50 d-block">
+                    <i class="fas fa-id-badge me-1"></i>Roll: {{ student.roll_number }}
+                </small>
+                {% endif %}
+            </div>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn mt-2">
                 <i class="fas fa-sign-out-alt me-1"></i> Logout
             </a>
         </div>
         {% endif %}
     </nav>
 
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="toast show notification-toast notification-{{ category }}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="toast-header notification-header-{{ category }}">
+                    {% if category == 'success' %}
+                    <i class="fas fa-check-circle me-2 text-success"></i>
+                    <strong class="me-auto">Success</strong>
+                    {% elif category == 'danger' %}
+                    <i class="fas fa-exclamation-circle me-2 text-danger"></i>
+                    <strong class="me-auto">Error</strong>
+                    {% elif category == 'warning' %}
+                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                    <strong class="me-auto">Warning</strong>
+                    {% elif category == 'info' %}
+                    <i class="fas fa-info-circle me-2 text-info"></i>
+                    <strong class="me-auto">Info</strong>
+                    {% else %}
+                    <i class="fas fa-bell me-2"></i>
+                    <strong class="me-auto">Notification</strong>
+                    {% endif %}
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body notification-body-{{ category }}">
+                    {{ message }}
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
     <!-- Page Content -->
     <div id="content" class="container-fluid">
         <div class="container-fluid px-4">
-            <!-- Messages/Alerts -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% endfor %}
-            {% endif %}
-            {% endwith %}
-            
             <!-- Main Content -->
             {% block content %}{% endblock %}
         </div>
@@ -248,6 +361,24 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Initialize Toast Notifications
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all toast notifications
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function(toastEl) {
+                const toast = new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 5000
+                });
+                toast.show();
+                
+                // Remove toast element after it's hidden
+                toastEl.addEventListener('hidden.bs.toast', function() {
+                    toastEl.remove();
+                });
+            });
+        });
+
         // Mobile nav toggle
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarCollapse = document.createElement('button');

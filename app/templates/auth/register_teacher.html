@@ -11,6 +11,13 @@
         <form method="post" action="{{ url_for('auth.register_teacher') }}" class="auth-form">
             {{ form.hidden_tag() }}
             <div class="mb-3">
+                {{ form.full_name.label(class="form-label") }}
+                {{ form.full_name(class="form-control", placeholder="Enter teacher's full name") }}
+                {% for error in form.full_name.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
                 {{ form.username.label(class="form-label") }}
                 {{ form.username(class="form-control", placeholder="Enter teacher's username") }}
                 {% for error in form.username.errors %}
@@ -26,13 +33,19 @@
             </div>
             <div class="mb-3">
                 {{ form.password.label(class="form-label") }}
-                {{ form.password(class="form-control", placeholder="Create a password") }}
+                <span class="text-muted small">(Optional)</span>
+                {{ form.password(class="form-control", placeholder="Enter custom password (optional)") }}
                 {% for error in form.password.errors %}
                 <div class="text-danger">{{ error }}</div>
                 {% endfor %}
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Leave empty to use default password. Teacher can change it after login.
+                </small>
             </div>
             <div class="mb-4">
                 {{ form.password2.label(class="form-label") }}
+                <span class="text-muted small">(Required if password is provided)</span>
                 {{ form.password2(class="form-control", placeholder="Confirm password") }}
                 {% for error in form.password2.errors %}
                 <div class="text-danger">{{ error }}</div>

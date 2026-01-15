@@ -10,7 +10,7 @@
                 <h4 class="mb-0">Edit Student</h4>
             </div>
             <div class="card-body">
-                <form method="post" action="{{ url_for('students.edit', id=student.id) }}">
+                <form method="post" action="{{ url_for('students.edit', id=student.id) }}" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
                     <div class="mb-3">
                         {{ form.name.label(class="form-label") }}
@@ -33,6 +33,34 @@
                         <div class="text-danger">{{ error }}</div>
                         {% endfor %}
                     </div>
+                    
+                    <div class="mb-3">
+                        {{ form.face_image.label(class="form-label") }}
+                        <small class="text-muted d-block mb-2">Upload a new face image to update face recognition (Optional)</small>
+                        
+                        {% if student.face_image_path %}
+                        <div class="mb-2">
+                            <label class="form-label text-muted">Current Face Image:</label>
+                            <div>
+                                <img src="{{ url_for('static', filename=student.face_image_path) }}" 
+                                     alt="Current face image" 
+                                     class="img-thumbnail" 
+                                     style="max-width: 200px; max-height: 200px;"
+                                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-muted\'><i class=\'fas fa-image\'></i> Image not found</div>';">
+                            </div>
+                            <small class="text-muted">Leave blank to keep current image</small>
+                        </div>
+                        {% endif %}
+                        
+                        {{ form.face_image(class="form-control", accept="image/jpeg,image/jpg,image/png") }}
+                        {% for error in form.face_image.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> Supported formats: JPG, JPEG, PNG. Image should contain a clear, front-facing face.
+                        </div>
+                    </div>
+                    
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('students.list') }}" class="btn btn-secondary">Cancel</a>
                         {{ form.submit(class="btn btn-primary") }}

@@ -10,7 +10,7 @@
                 <h4 class="mb-0 fw-bold">Add New Student</h4>
             </div>
             <div class="card-body p-4">
-                <form method="post" action="{{ url_for('students.add') }}">
+                <form method="post" action="{{ url_for('students.add') }}" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
                     
                     <div class="row">
@@ -36,6 +36,18 @@
                         {% for error in form.grade.errors %}
                         <div class="text-danger mt-1">{{ error }}</div>
                         {% endfor %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.face_image.label(class="form-label fw-bold") }}
+                        <small class="text-muted d-block mb-2">Upload a clear face image for face recognition (Optional)</small>
+                        {{ form.face_image(class="form-control form-control-lg", accept="image/jpeg,image/jpg,image/png") }}
+                        {% for error in form.face_image.errors %}
+                        <div class="text-danger mt-1">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> Supported formats: JPG, JPEG, PNG. Image should contain a clear, front-facing face.
+                        </div>
                     </div>
                     
                     <div class="d-grid gap-2 mt-4">

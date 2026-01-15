@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}My Attendance Report - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">My Attendance Report - {{ month_name }} {{ selected_year }}</h6>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>{{ student.name }}</h5>
+                    <p><strong>Roll Number:</strong> {{ student.roll_number }}</p>
+                    <p><strong>Grade:</strong> {{ student.grade }}</p>
+                    <p><strong>Teacher:</strong> {{ teacher.display_name if teacher else 'N/A' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Attendance Summary</h5>
+                            <p><strong>Total Days:</strong> {{ total_days }}</p>
+                            <p><strong>Present Days:</strong> {{ present_days }}</p>
+                            <p><strong>Absent Days:</strong> {{ absent_days }}</p>
+                            <p><strong>Attendance Percentage:</strong> {{ attendance_percentage }}%</p>
+                            <div class="progress">
+                                <div class="progress-bar {% if attendance_percentage < 75 %}bg-danger{% elif attendance_percentage < 90 %}bg-warning{% else %}bg-success{% endif %}"
+                                     role="progressbar"
+                                     style="width: {{ attendance_percentage }}%;"
+                                     aria-valuenow="{{ attendance_percentage }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                    {{ attendance_percentage }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="get" action="{{ url_for('student.report') }}" class="mb-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="month" class="form-label">Month</label>
+                        <select class="form-select" id="month" name="month">
+                            {% for i in range(1, 13) %}
+                            <option value="{{ i }}" {% if i == selected_month %}selected{% endif %}>
+                                {{ ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][i-1] }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="year" class="form-label">Year</label>
+                        <select class="form-select" id="year" name="year">
+                            {% for i in range(selected_year - 2, selected_year + 2) %}
+                            <option value="{{ i }}" {% if i == selected_year %}selected{% endif %}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">View Report</button>
+                    </div>
+                </div>
+            </form>
+
+            <h5 class="mb-3">Attendance Details for {{ month_name }} {{ selected_year }}</h5>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="30%">Date</th>
+                            <th width="15%">Status</th>
+                            <th width="30%">Marked By</th>
+                            <th width="25%">Last Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in attendance_data %}
+                        <tr class="{% if item.status == 'Present' %}table-success{% elif item.status == 'Absent' %}table-danger{% else %}table-secondary{% endif %}">
+                            <td><strong>{{ item.date.strftime('%A, %B %d, %Y') }}</strong></td>
+                            <td>
+                                {% if item.status == 'Present' %}
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> Present</span>
+                                {% elif item.status == 'Absent' %}
+                                    <span class="badge bg-danger"><i class="fas fa-times"></i> Absent</span>
+                                {% else %}
+                                    <span class="badge bg-secondary"><i class="fas fa-question"></i> Not Marked</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.marked_by %}
+                                    <i class="fas fa-user-tie me-1"></i>{{ item.marked_by }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.last_modified %}
+                                    <small><i class="fas fa-clock me-1"></i>{{ item.last_modified.strftime('%d-%m-%Y %H:%M') }}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if not attendance_data %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>No attendance records found for this month.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

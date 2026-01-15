@@ -26,17 +26,14 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="mb-0">YOLO Analysis</h5>
+                            <h5 class="mb-0">Face Recognition Analysis</h5>
                         </div>
                         <div class="card-body text-center">
-                            {% if image.annotated_file_path %}
-                            <img src="{{ url_for('static', filename='uploads/' + image.annotated_file_path.split('/')[-1]) }}" class="img-fluid" alt="YOLO Analysis">
-                            {% if image.annotated_drive_view_link %}
-                            <a href="{{ image.annotated_drive_view_link }}" target="_blank" class="btn btn-success btn-sm mt-2">View Analysis in Drive</a>
-                            {% endif %}
+                            {% if image.face_annotated_path %}
+                            <img src="{{ url_for('static', filename='uploads/' + image.face_annotated_path.split('/')[-1]) }}" class="img-fluid" alt="Face Recognition Analysis">
                             {% else %}
                             <div class="alert alert-info">
-                                No YOLO analysis available
+                                No face recognition analysis available
                             </div>
                             {% endif %}
                         </div>
@@ -78,33 +75,29 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="mb-0">Attendance Analysis</h5>
+                            <h5 class="mb-0">Face Recognition Results</h5>
                         </div>
                         <div class="card-body">
                             <table class="table table-sm">
+                                {% if image.faces_detected is not none %}
                                 <tr>
-                                    <th>Students Detected:</th>
-                                    <td>{{ image.yolo_count }}</td>
+                                    <th>Faces Detected:</th>
+                                    <td>{{ image.faces_detected }}</td>
                                 </tr>
-                                {% if image.yolo_confidence %}
+                                {% endif %}
+                                {% if image.students_matched is not none %}
                                 <tr>
-                                    <th>Detection Confidence:</th>
-                                    <td>{{ "%.2f"|format(image.yolo_confidence * 100) }}%</td>
+                                    <th>Students Matched:</th>
+                                    <td>{{ image.students_matched }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if image.attendance_marked_count is not none %}
+                                <tr>
+                                    <th>Attendance Marked:</th>
+                                    <td>{{ image.attendance_marked_count }}</td>
                                 </tr>
                                 {% endif %}
                             </table>
-
-                            {% if image.has_discrepancy %}
-                            <div class="alert alert-warning mt-3">
-                                <h6 class="alert-heading">Discrepancy Detected</h6>
-                                {{ image.discrepancy_message }}
-                            </div>
-                            {% else %}
-                            <div class="alert alert-success mt-3">
-                                <h6 class="alert-heading">Attendance Match</h6>
-                                YOLO detection count matches the attendance records.
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>

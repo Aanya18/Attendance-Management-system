@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 fw-bold text-dark">
+                <i class="fas fa-user-circle text-primary me-2"></i>My Profile
+            </h2>
+            <p class="text-muted mb-0">View and manage your account information</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Personal Information Card -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-user me-2"></i>Personal Information
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="profile-info">
+                        <div class="info-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-user text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <small class="text-muted d-block mb-1">Full Name</small>
+                                    <h6 class="mb-0 fw-semibold">{{ student.name }}</h6>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-info bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-id-badge text-info"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <small class="text-muted d-block mb-1">Roll Number</small>
+                                    <h6 class="mb-0 fw-semibold">{{ student.roll_number }}</h6>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-graduation-cap text-success"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <small class="text-muted d-block mb-1">Grade</small>
+                                    <h6 class="mb-0 fw-semibold">{{ student.grade }}</h6>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-warning bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-chalkboard-teacher text-warning"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <small class="text-muted d-block mb-1">Teacher</small>
+                                    <h6 class="mb-0 fw-semibold">{{ teacher.display_name if teacher else 'N/A' }}</h6>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-secondary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-at text-secondary"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <small class="text-muted d-block mb-1">Username</small>
+                                    <h6 class="mb-0 fw-semibold">{{ current_user.username }}</h6>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-danger bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-envelope text-danger"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <small class="text-muted d-block mb-1">Email</small>
+                                    <h6 class="mb-0 fw-semibold">{{ current_user.email }}</h6>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <small class="text-muted d-block mb-1">Account Status</small>
+                                    <span class="badge bg-success px-3 py-2">
+                                        <i class="fas fa-check me-1"></i>Active
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Statistics Card -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-chart-bar me-2"></i>Attendance Statistics
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-4">
+                        <!-- Present Card -->
+                        <div class="col-md-4">
+                            <div class="stat-card bg-success bg-opacity-10 border-start border-success border-4 rounded p-3 h-100">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <small class="text-muted d-block mb-1 fw-semibold text-uppercase">Present</small>
+                                        <h3 class="mb-0 fw-bold text-success">{{ present_count }}</h3>
+                                    </div>
+                                    <div class="stat-icon bg-success rounded-circle p-2">
+                                        <i class="fas fa-check-circle text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Absent Card -->
+                        <div class="col-md-4">
+                            <div class="stat-card bg-danger bg-opacity-10 border-start border-danger border-4 rounded p-3 h-100">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <small class="text-muted d-block mb-1 fw-semibold text-uppercase">Absent</small>
+                                        <h3 class="mb-0 fw-bold text-danger">{{ absent_count }}</h3>
+                                    </div>
+                                    <div class="stat-icon bg-danger rounded-circle p-2">
+                                        <i class="fas fa-times-circle text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Percentage Card -->
+                        <div class="col-md-4">
+                            <div class="stat-card bg-info bg-opacity-10 border-start border-info border-4 rounded p-3 h-100">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <small class="text-muted d-block mb-1 fw-semibold text-uppercase">Percentage</small>
+                                        <h3 class="mb-0 fw-bold text-info">{{ attendance_percentage }}%</h3>
+                                    </div>
+                                    <div class="stat-icon bg-info rounded-circle p-2">
+                                        <i class="fas fa-percentage text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Records -->
+                    <div class="text-center p-3 bg-light rounded">
+                        <p class="mb-0">
+                            <i class="fas fa-clipboard-list text-primary me-2"></i>
+                            <strong>Total Attendance Records:</strong> 
+                            <span class="badge bg-primary px-3 py-2 ms-2">{{ total_attendance }}</span>
+                        </p>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    {% if total_attendance > 0 %}
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Attendance Progress</span>
+                            <span class="text-muted small fw-semibold">{{ attendance_percentage }}%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar {% if attendance_percentage >= 75 %}bg-success{% elif attendance_percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ attendance_percentage }}%;" 
+                                 aria-valuenow="{{ attendance_percentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings Card -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-warning text-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-cog me-2"></i>Account Settings
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('student.change_password') }}" 
+                           class="list-group-item list-group-item-action border-0 px-0 py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="action-icon bg-warning bg-opacity-10 rounded-circle p-3 me-3">
+                                    <i class="fas fa-key text-warning"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-semibold">Change Password</h6>
+                                    <small class="text-muted">Update your account password</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-info text-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('student.attendance') }}" 
+                           class="list-group-item list-group-item-action border-0 px-0 py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="action-icon bg-info bg-opacity-10 rounded-circle p-3 me-3">
+                                    <i class="fas fa-calendar-check text-info"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-semibold">View My Attendance</h6>
+                                    <small class="text-muted">Check your daily attendance records</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                        <a href="{{ url_for('student.report') }}" 
+                           class="list-group-item list-group-item-action border-0 px-0 py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="action-icon bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                                    <i class="fas fa-chart-line text-success"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-semibold">View My Attendance Report</h6>
+                                    <small class="text-muted">View detailed monthly reports</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+}
+
+.info-icon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-card {
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.list-group-item-action:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+    transition: all 0.3s ease;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 1rem !important;
+    }
+    
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

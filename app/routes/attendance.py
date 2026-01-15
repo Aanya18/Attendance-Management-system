@@ -1,88 +1,25 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
-from datetime import datetime, timedelta
-import pytz
+from datetime import datetime
 from app import db
-from app.models import Student, Attendance, get_local_datetime, get_local_date
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import json
+from app.models import Student, Attendance
+from app.utils.decorators import teacher_required, principal_or_owner_required
+from app.utils.timezone_utils import get_local_datetime, get_local_date
 from app.utils.auto_sync import auto_sync_to_sheets
-from app.utils.google_sheets import sync_attendance_data
+from app.utils.google_sheets import sync_teacher_attendance_data
 
 attendance = Blueprint('attendance', __name__, url_prefix='/attendance')
 
-# Helper function to get current local time
+# Helper function to get current local date (alias for consistency)
 def get_today():
-    # Set to your local timezone, e.g., 'Asia/Kolkata' for India
-    local_tz = pytz.timezone('Asia/Kolkata')
-    utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-    local_now = utc_now.astimezone(local_tz)
-    return local_now.date()
-
-def update_google_sheet(attendance_record):
-    """Update Google Sheet with attendance data"""
-    try:
-        # Load credentials from app config
-        credentials_json = current_app.config['GOOGLE_SHEETS_CREDENTIALS']
-        sheet_id = current_app.config['ATTENDANCE_SHEET_ID']
-
-        if not credentials_json or not sheet_id:
-            current_app.logger.warning("Google Sheets credentials or sheet ID not configured")
-            return False
-
-        # Parse credentials JSON
-        credentials_dict = json.loads(credentials_json)
-        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
-
-        # Authorize and open the sheet
-        client = gspread.authorize(credentials)
-        sheet = client.open_by_key(sheet_id)
-
-        # Get or create worksheet for the current month
-        month_year = attendance_record.date.strftime('%B %Y')
-        try:
-            worksheet = sheet.worksheet(month_year)
-        except gspread.exceptions.WorksheetNotFound:
-            # Create a new worksheet for this month
-            worksheet = sheet.add_worksheet(title=month_year, rows=100, cols=20)
-            # Add headers
-            worksheet.update('A1:D1', [['Date', 'Student Name', 'Roll Number', 'Status']])
-
-        # Find the next empty row
-        records = worksheet.get_all_values()
-        next_row = len(records) + 1
-
-        # Add the attendance record
-        status = "Present" if attendance_record.status else "Absent"
-        worksheet.update(f'A{next_row}:D{next_row}',
-                        [[attendance_record.date.strftime('%Y-%m-%d'),
-                          attendance_record.student.name,
-                          attendance_record.student.roll_number,
-                          status]])
-
-        return True
-    except Exception as e:
-        current_app.logger.error(f"Error updating Google Sheet: {str(e)}")
-        return False
+    return get_local_date()
 
 @attendance.route('/mark', methods=['GET', 'POST'])
 @login_required
+@teacher_required
 def mark():
-    # Only teachers can mark attendance
-    if not current_user.is_teacher():
-        flash('Only teachers can mark attendance', 'danger')
-        return redirect(url_for('students.list'))
-
     today = get_today()
     students = Student.query.filter_by(teacher_id=current_user.id).all()
-
-    # Check if already marked for today
-    attendance_count = Attendance.query.filter(
-        Attendance.student_id.in_([s.id for s in students]),
-        Attendance.date == today
-    ).count()
 
     # Handle POST request
     if request.method == 'POST':
@@ -225,14 +162,13 @@ def view():
 
 @attendance.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@principal_or_owner_required(lambda user, *args, **kwargs: 
+    (lambda a: a.marked_by == user.id if a else False)(
+        Attendance.query.get(kwargs.get('id', args[0] if args else None))
+    ))
 def edit(id):
     # Get the attendance record
     attendance_record = Attendance.query.get_or_404(id)
-    
-    # Only principal and the teacher who marked it can edit
-    if not current_user.is_principal() and current_user.id != attendance_record.marked_by:
-        flash('You do not have permission to edit this attendance record', 'danger')
-        return redirect(url_for('attendance.view'))
     
     # Handle POST request
     if request.method == 'POST':
@@ -247,7 +183,7 @@ def edit(id):
             # Sync to Google Sheets
             student = Student.query.get(attendance_record.student_id)
             if student:
-                sync_result = sync_attendance_data(student.teacher_id)
+                sync_result = sync_teacher_attendance_data(student.teacher_id)
                 if sync_result:
                     flash('Attendance record updated successfully and Google Sheet updated!', 'success')
                 else:

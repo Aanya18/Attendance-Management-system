@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 from app import db
 from app.models import Student, Attendance, User
+from app.utils.decorators import principal_required, principal_or_owner_required
 from sqlalchemy import func
 import io
 import csv
@@ -228,11 +229,8 @@ def send_monthly_report_email(year, month, report_data):
 
 @reports.route('/monthly', methods=['GET', 'POST'])
 @login_required
+@principal_required
 def monthly():
-    # Only principals can access monthly reports
-    if not current_user.is_principal():
-        flash('You do not have permission to access monthly reports', 'danger')
-        return redirect(url_for('students.list'))
         
     today = datetime.now().date()
     current_year = today.year
@@ -313,11 +311,8 @@ def monthly():
 
 @reports.route('/monthly/download', methods=['GET'])
 @login_required
+@principal_required
 def download_monthly_report():
-    # Only principals can download reports
-    if not current_user.is_principal():
-        flash('You do not have permission to download reports', 'danger')
-        return redirect(url_for('students.list'))
     
     today = datetime.now().date()
     try:
@@ -411,17 +406,12 @@ def download_monthly_report():
 
 @reports.route('/student/<int:id>', methods=['GET'])
 @login_required
+@principal_or_owner_required(lambda user, *args, **kwargs: 
+    (lambda s: s.teacher_id == user.id if s else False)(
+        Student.query.get(kwargs.get('id', args[0] if args else None))
+    ))
 def student(id):
-    # Teachers can access student reports but only for their students and current date
-    if not current_user.is_principal() and not current_user.is_teacher():
-        flash('Only principals and teachers can access reports', 'danger')
-        return redirect(url_for('students.list'))
-
-    # Teachers can only view their own students
     student = Student.query.get_or_404(id)
-    if current_user.is_teacher() and student.teacher_id != current_user.id:
-        flash('You can only view reports for your own students', 'danger')
-        return redirect(url_for('students.list'))
 
     # Get date range from query parameters, default to current month
     now = datetime.now()
@@ -499,12 +489,9 @@ def student(id):
 
 @reports.route('/sync-sheets', methods=['GET', 'POST'])
 @login_required
+@principal_required
 def sync_sheets():
     """View to manually sync attendance data to Google Sheets"""
-    # Only principals can sync data
-    if not current_user.is_principal():
-        flash('You do not have permission to sync data to Google Sheets', 'danger')
-        return redirect(url_for('students.list'))
         
     if request.method == 'POST':
         try:
@@ -638,12 +625,9 @@ def download_student_report(student, year, month):
 
 @reports.route('/admin/flush-options', methods=['GET', 'POST'])
 @login_required
+@principal_required
 def flush_options():
     """View to allow principals to flush database and reset Google Sheets"""
-    # Only principals can access this page
-    if not current_user.is_principal():
-        flash('You do not have permission to access this page', 'danger')
-        return redirect(url_for('students.list'))
     
     # Get all teachers for the dropdown
     teachers = User.query.filter_by(role='teacher').all()

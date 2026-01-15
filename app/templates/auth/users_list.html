@@ -58,8 +58,10 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
+                        <th>Full Name</th>
                         <th>Username</th>
                         <th>Email</th>
+                        <th>Status</th>
                         <th>Students</th>
                         <th>Actions</th>
                     </tr>
@@ -67,10 +69,21 @@
                 <tbody>
                     {% for teacher in teachers %}
                     <tr>
+                        <td>{{ teacher.full_name or teacher.username }}</td>
                         <td>{{ teacher.username }}</td>
                         <td>{{ teacher.email }}</td>
+                        <td>
+                            {% if teacher.is_approved %}
+                                <span class="badge bg-success">Approved</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pending Approval</span>
+                            {% endif %}
+                        </td>
                         <td>{{ teacher.students|length }}</td>
                         <td>
+                            {% if not teacher.is_approved %}
+                                <a href="{{ url_for('auth.approve_teacher', id=teacher.id) }}" class="btn btn-sm btn-success" onclick="return confirm('Approve teacher {{ teacher.full_name or teacher.username }}?')">Approve</a>
+                            {% endif %}
                             <a href="{{ url_for('auth.edit_user', id=teacher.id) }}" class="btn btn-sm btn-warning">Edit</a>
                             <a href="{{ url_for('auth.delete_user', id=teacher.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this teacher?')">Delete</a>
                         </td>

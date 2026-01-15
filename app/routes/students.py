@@ -1,11 +1,18 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from app import db
 from app.models import Student, User
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, SubmitField, SelectField
-from wtforms.validators import DataRequired, ValidationError
+from wtforms.validators import DataRequired, ValidationError, Optional
 from app.utils.auto_sync import auto_sync_to_sheets
+from app.utils.face_recognition import FaceRecognition
+from app.utils.decorators import teacher_required, principal_or_owner_required
+from app.utils.student_utils import create_student_user_account
+from werkzeug.utils import secure_filename
+import os
+import json
 
 students = Blueprint('students', __name__, url_prefix='/students')
 
@@ -28,6 +35,8 @@ class StudentForm(FlaskForm):
         ('11', '11th Grade'),
         ('12', '12th Grade')
     ], validators=[DataRequired()])
+    face_image = FileField('Face Image (for face recognition)', 
+                           validators=[Optional(), FileAllowed(['jpg', 'jpeg', 'png'], 'Only image files (jpg, jpeg, png) are allowed!')])
     submit = SubmitField('Submit')
 
     def validate_roll_number(self, roll_number):
@@ -59,11 +68,8 @@ def list():
 
 @students.route('/add', methods=['GET', 'POST'])
 @login_required
+@teacher_required
 def add():
-    # Only teachers can add students
-    if not current_user.is_teacher():
-        flash('Only teachers can add students', 'danger')
-        return redirect(url_for('students.list'))
 
     form = StudentForm()
     if form.validate_on_submit():
@@ -73,32 +79,103 @@ def add():
             grade=form.grade.data,
             teacher_id=current_user.id
         )
+        
+        # Handle face image upload
+        if form.face_image.data:
+            try:
+                # Save uploaded file
+                file = form.face_image.data
+                filename = secure_filename(file.filename)
+                
+                # Create student_faces directory if it doesn't exist
+                faces_dir = os.path.join(current_app.root_path, 'static', 'student_faces')
+                if not os.path.exists(faces_dir):
+                    os.makedirs(faces_dir)
+                
+                # Generate unique filename: roll_number_timestamp.ext
+                import time
+                name, ext = os.path.splitext(filename)
+                unique_filename = f"{form.roll_number.data}_{int(time.time())}{ext}"
+                file_path = os.path.join(faces_dir, unique_filename)
+                
+                # Save file
+                file.save(file_path)
+                
+                # Generate face embedding
+                try:
+                    face_rec = FaceRecognition()
+                    embedding, face_image, bbox = face_rec.detect_and_extract_face(file_path)
+                    
+                    if embedding is not None:
+                        # Store embedding and relative image path
+                        relative_path = os.path.join('student_faces', unique_filename)
+                        embedding_json = json.dumps(face_rec.embedding_to_json(embedding))
+                        student.face_embedding = embedding_json
+                        student.face_image_path = relative_path
+                        current_app.logger.info(f"Face embedding saved for student {student.name}: {len(embedding_json)} chars")
+                        flash('Face image uploaded and embedding generated successfully!', 'success')
+                    else:
+                        # Keep the file but don't store embedding
+                        relative_path = os.path.join('student_faces', unique_filename)
+                        student.face_image_path = relative_path
+                        student.face_embedding = None  # Explicitly set to None
+                        flash('Face image uploaded but no face detected. Please ensure the image contains a clear, front-facing face. Image saved for review.', 'warning')
+                        current_app.logger.warning(f"Face detection failed for image: {file_path}")
+                except Exception as face_error:
+                    # Keep the file even if there's an error
+                    relative_path = os.path.join('student_faces', unique_filename)
+                    student.face_image_path = relative_path
+                    error_msg = str(face_error)
+                    current_app.logger.error(f"Face recognition error: {error_msg}", exc_info=True)
+                    
+                    # Provide more helpful error messages
+                    if "insightface" in error_msg.lower() or "import" in error_msg.lower():
+                        flash('Face recognition failed: InsightFace model not available. Please install: pip install insightface onnxruntime', 'danger')
+                    elif "no face detected" in error_msg.lower():
+                        flash('No face detected in image. Please upload a clear, front-facing face photo with good lighting.', 'warning')
+                    else:
+                        flash(f'Face recognition error: {error_msg}. Image saved. Please check logs for details.', 'warning')
+                    
+            except Exception as e:
+                current_app.logger.error(f"Error processing face image: {str(e)}")
+                flash('Error processing face image. Student added but face recognition not available.', 'warning')
+        
         db.session.add(student)
-        db.session.commit()
-
+        db.session.flush()  # Flush to get student.id
+        
+        # Create User account for student with auto-generated credentials
+        user_account = create_student_user_account(student, common_password='student123')
+        if user_account:
+            db.session.add(user_account)
+            db.session.flush()  # Flush to get user_account.id
+            
+            # Link Student to User account
+            student.user_id = user_account.id
+            db.session.commit()
+            
+            flash(f'Student "{student.name}" added successfully! Username: {user_account.username}, Email: {user_account.email}.', 'success')
+        else:
+            db.session.commit()
+            flash('Student added successfully but failed to create login account.', 'warning')
+        
         # Auto-sync to Google Sheets
         sync_result = auto_sync_to_sheets()
         if sync_result:
-            flash('Student added successfully and Google Sheet updated!', 'success')
+            flash('Google Sheet updated!', 'success')
         else:
-            flash('Student added successfully but Google Sheet update failed. Principal will need to refresh.', 'warning')
+            flash('Google Sheet update failed. Principal will need to refresh.', 'warning')
 
         return redirect(url_for('students.list'))
     return render_template('students/add.html', title='Add Student', form=form)
 
 @students.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
+@principal_or_owner_required(lambda user, *args, **kwargs: 
+    (lambda s: s.teacher_id == user.id if s else False)(
+        Student.query.get(kwargs.get('id', args[0] if args else None))
+    ))
 def edit(id):
     student = Student.query.get_or_404(id)
-
-    # Access control logic
-    if current_user.is_principal():
-        # Principals can edit any student
-        pass
-    elif student.teacher_id != current_user.id:
-        # Teachers can only edit their own students
-        flash('You can only edit your own students', 'danger')
-        return redirect(url_for('students.list'))
 
     form = StudentForm()
     form.student_id = student.id  # Pass student ID to the form for validation
@@ -107,6 +184,66 @@ def edit(id):
         student.name = form.name.data
         student.roll_number = form.roll_number.data
         student.grade = form.grade.data
+        
+        # Handle face image upload (optional - only if new image provided)
+        if form.face_image.data:
+            try:
+                # Delete old face image if exists
+                if student.face_image_path:
+                    old_path = os.path.join(current_app.root_path, 'static', student.face_image_path)
+                    if os.path.exists(old_path):
+                        try:
+                            os.remove(old_path)
+                        except:
+                            pass  # Ignore if file doesn't exist
+                
+                # Save uploaded file
+                file = form.face_image.data
+                filename = secure_filename(file.filename)
+                
+                # Create student_faces directory if it doesn't exist
+                faces_dir = os.path.join(current_app.root_path, 'static', 'student_faces')
+                if not os.path.exists(faces_dir):
+                    os.makedirs(faces_dir)
+                
+                # Generate unique filename: roll_number_timestamp.ext
+                import time
+                name, ext = os.path.splitext(filename)
+                unique_filename = f"{form.roll_number.data}_{int(time.time())}{ext}"
+                file_path = os.path.join(faces_dir, unique_filename)
+                
+                # Save file
+                file.save(file_path)
+                
+                # Generate face embedding
+                try:
+                    face_rec = FaceRecognition()
+                    embedding, face_image, bbox = face_rec.detect_and_extract_face(file_path)
+                    
+                    if embedding is not None:
+                        # Store embedding and relative image path
+                        relative_path = os.path.join('student_faces', unique_filename)
+                        student.face_embedding = json.dumps(face_rec.embedding_to_json(embedding))
+                        student.face_image_path = relative_path
+                        flash('Face image updated and embedding regenerated successfully!', 'success')
+                    else:
+                        # Keep the new file but don't update embedding
+                        relative_path = os.path.join('student_faces', unique_filename)
+                        student.face_image_path = relative_path
+                        flash('Face image uploaded but no face detected. Please ensure the image contains a clear, front-facing face. Image saved for review.', 'warning')
+                        current_app.logger.warning(f"Face detection failed for image: {file_path}")
+                except Exception as face_error:
+                    # Keep the file even if there's an error
+                    relative_path = os.path.join('student_faces', unique_filename)
+                    student.face_image_path = relative_path
+                    error_msg = str(face_error)
+                    current_app.logger.error(f"Face recognition error: {error_msg}", exc_info=True)
+                    flash(f'Face image uploaded but face recognition failed: {error_msg}. Image saved for review.', 'warning')
+                    
+            except Exception as e:
+                current_app.logger.error(f"Error processing face image: {str(e)}")
+                flash('Error processing face image. Student updated but face recognition not updated.', 'warning')
+        
         db.session.commit()
 
         # Auto-sync to Google Sheets
@@ -127,17 +264,12 @@ def edit(id):
 
 @students.route('/delete/<int:id>', methods=['POST'])
 @login_required
+@principal_or_owner_required(lambda user, *args, **kwargs: 
+    (lambda s: s.teacher_id == user.id if s else False)(
+        Student.query.get(kwargs.get('id', args[0] if args else None))
+    ))
 def delete(id):
     student = Student.query.get_or_404(id)
-
-    # Access control logic
-    if current_user.is_principal():
-        # Principals can delete any student
-        pass
-    elif student.teacher_id != current_user.id:
-        # Teachers can only delete their own students
-        flash('You can only delete your own students', 'danger')
-        return redirect(url_for('students.list'))
 
     try:
         # First delete all attendance records for this student

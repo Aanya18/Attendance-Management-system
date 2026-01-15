@@ -11,6 +11,13 @@
         <form method="post" action="{{ url_for('auth.register') }}" class="auth-form">
             {{ form.hidden_tag() }}
             <div class="mb-3">
+                {{ form.full_name.label(class="form-label") }}
+                {{ form.full_name(class="form-control", placeholder="Enter your full name") }}
+                {% for error in form.full_name.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
                 {{ form.username.label(class="form-label") }}
                 {{ form.username(class="form-control", placeholder="Choose a username") }}
                 {% for error in form.username.errors %}

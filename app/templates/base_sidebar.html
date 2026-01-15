@@ -274,10 +274,22 @@
         
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                {% if current_user.is_principal() %}
+                <a class="nav-link {% if request.endpoint == 'auth.principal_dashboard' %}active{% endif %}" href="{{ url_for('auth.principal_dashboard') }}">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </a>
+                {% elif current_user.is_student() %}
+                <a class="nav-link {% if request.endpoint == 'student.profile' %}active{% endif %}" href="{{ url_for('student.profile') }}">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                {% else %}
+                <a class="nav-link {% if request.endpoint == 'students.list' %}active{% endif %}" href="{{ url_for('students.list') }}">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                {% endif %}
             </li>
         </ul>
         
@@ -290,6 +302,12 @@
         </div>
         
         <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'auth.principal_dashboard' %}active{% endif %}" href="{{ url_for('auth.principal_dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'auth.user_list' %}active{% endif %}" href="{{ url_for('auth.user_list') }}">
                     <i class="fas fa-users"></i>
@@ -354,6 +372,46 @@
                     <span>Upload Images</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'auth.change_password' %}active{% endif %}" href="{{ url_for('auth.change_password') }}">
+                    <i class="fas fa-key"></i>
+                    <span>Change Password</span>
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+
+        {% if current_user.is_student() %}
+        <!-- Student Navigation -->
+        <div class="sidebar-heading">
+            Student Menu
+        </div>
+        
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'student.profile' %}active{% endif %}" href="{{ url_for('student.profile') }}">
+                    <i class="fas fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'student.attendance' %}active{% endif %}" href="{{ url_for('student.attendance') }}">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>My Attendance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'student.report' %}active{% endif %}" href="{{ url_for('student.report') }}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>My Report</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'student.change_password' %}active{% endif %}" href="{{ url_for('student.change_password') }}">
+                    <i class="fas fa-key"></i>
+                    <span>Change Password</span>
+                </a>
+            </li>
         </ul>
         {% endif %}
         
@@ -399,28 +457,42 @@
         {% endif %}
     </div>
 
-    <!-- Content -->
-    <div class="content" id="content">
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                {% if category == 'success' %}
-                <i class="fas fa-check-circle me-2"></i>
-                {% elif category == 'danger' %}
-                <i class="fas fa-exclamation-circle me-2"></i>
-                {% elif category == 'warning' %}
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                {% elif category == 'info' %}
-                <i class="fas fa-info-circle me-2"></i>
-                {% endif %}
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="toast show notification-toast notification-{{ category }}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="toast-header notification-header-{{ category }}">
+                    {% if category == 'success' %}
+                    <i class="fas fa-check-circle me-2 text-success"></i>
+                    <strong class="me-auto">Success</strong>
+                    {% elif category == 'danger' %}
+                    <i class="fas fa-exclamation-circle me-2 text-danger"></i>
+                    <strong class="me-auto">Error</strong>
+                    {% elif category == 'warning' %}
+                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                    <strong class="me-auto">Warning</strong>
+                    {% elif category == 'info' %}
+                    <i class="fas fa-info-circle me-2 text-info"></i>
+                    <strong class="me-auto">Info</strong>
+                    {% else %}
+                    <i class="fas fa-bell me-2"></i>
+                    <strong class="me-auto">Notification</strong>
+                    {% endif %}
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body notification-body-{{ category }}">
+                    {{ message }}
+                </div>
             </div>
             {% endfor %}
         {% endif %}
         {% endwith %}
+    </div>
 
+    <!-- Content -->
+    <div class="content" id="content">
         {% block content %}{% endblock %}
     </div>
 
@@ -454,14 +526,20 @@
                 footer.classList.toggle('sidebar-open');
             });
             
-            // Auto-dismiss alerts after 5 seconds
-            setTimeout(function() {
-                const alerts = document.querySelectorAll('.alert');
-                alerts.forEach(function(alert) {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
+            // Initialize Toast Notifications
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function(toastEl) {
+                const toast = new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 5000
                 });
-            }, 5000);
+                toast.show();
+                
+                // Remove toast element after it's hidden
+                toastEl.addEventListener('hidden.bs.toast', function() {
+                    toastEl.remove();
+                });
+            });
             
             // Handle sidebar on mobile
             function checkWidth() {

@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, render_template
+from flask import Flask
 import logging
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -14,8 +14,12 @@ login_manager.login_view = 'auth.login'
 login_manager.login_message_category = 'info'
 mail = Mail()
 
-# Configure logging - Set to WARNING level to remove debug logs
-logging.basicConfig(level=logging.WARNING)
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 logger = logging.getLogger(__name__)
 
 def create_app(config_class=Config):
@@ -44,6 +48,9 @@ def create_app(config_class=Config):
     from app.routes.images import images as images_blueprint
     app.register_blueprint(images_blueprint)
 
+    from app.routes.student import student as student_blueprint
+    app.register_blueprint(student_blueprint)
+
     # Create database tables
     with app.app_context():
         db.create_all()
@@ -57,21 +64,7 @@ def create_app(config_class=Config):
     # Add context processor to make datetime available to all templates
     @app.context_processor
     def inject_now():
-        from datetime import datetime
-        import pytz
-        # Get local timezone - modify this to your timezone, e.g., 'Asia/Kolkata' for India
-        local_tz = pytz.timezone('Asia/Kolkata')
-        utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-        local_now = utc_now.astimezone(local_tz)
-        return {'now': local_now}
-
-    # Add root route
-    @app.route('/')
-    def index():
-        return render_template('landing.html')
-
-    @app.route('/test')
-    def test():
-        return '<h1>Test Route Works!</h1>'
+        from app.utils.timezone_utils import get_local_now
+        return {'now': get_local_now()}
 
     return app
