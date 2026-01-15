@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for, render_template
 import logging
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -50,6 +50,14 @@ def create_app(config_class=Config):
 
     from app.routes.student import student as student_blueprint
     app.register_blueprint(student_blueprint)
+
+    # Register root route
+    @app.route('/')
+    def index():
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            return redirect(url_for('students.list_students'))
+        return render_template('landing.html')
 
     # Create database tables
     with app.app_context():
